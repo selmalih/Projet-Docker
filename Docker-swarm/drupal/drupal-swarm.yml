@@ -1,61 +1,56 @@
 # Version de la syntaxe du fichier docker-compose.
-# Utilisez la version 3.8 ou supérieure pour prendre en charge les fonctionnalités de Docker Swarm.
+# Utilisez une version 3.8 ou supérieure pour prendre en charge Docker Swarm.
 version: '3.8'
 
 # Définition des services à déployer.
 services:
   # Service pour Drupal.
   drupal:
-    # Montage des volumes pour persister les données.
-    volumes:
-      - drupal:/var/www/html  # Le volume 'drupal' est monté dans le conteneur pour stocker les fichiers de Drupal.
-    # Image Docker à utiliser pour ce service.
     image: drupal:8-apache  # Utilise l'image officielle de Drupal 8 avec Apache.
-    # Exposition des ports.
+    volumes:
+      - drupal:/var/www/html  # Le volume persiste les fichiers de Drupal.
     ports:
-      - "8080:80"  # Le port 80 du conteneur est exposé sur le port 8080 de l'hôte.
-    # Réseaux auxquels le service est connecté.
+      - "8080:80"  # Mappe le port 80 du conteneur sur le port 8080 de l'hôte.
     networks:
-      - net  # Le service est connecté au réseau 'net'.
-    # Configuration spécifique au déploiement Swarm.
+      - net  # Connecte le service au réseau Swarm 'net'.
     deploy:
-      replicas: 4  # Nombre de réplicas (instances) du service à exécuter.
+      replicas: 4  # Exécute 4 réplicas du service pour la haute disponibilité.
       update_config:
-        parallelism: 2  # Nombre de conteneurs à mettre à jour en parallèle.
-        delay: 10s  # Délai entre les mises à jour des conteneurs.
+        parallelism: 2  # Met à jour 2 conteneurs en parallèle lors des mises à jour.
+        delay: 10s  # Intervalle de 10 secondes entre les mises à jour.
       restart_policy:
-        condition: on-failure  # Redémarre le conteneur uniquement en cas d'échec.
+        condition: on-failure  # Redémarre uniquement en cas d'échec.
+      placement:
+        constraints:
+          - node.role == worker  # Drupal s'exécute sur des nœuds worker pour éviter de surcharger le manager.
 
   # Service pour PostgreSQL.
   postgres:
-    # Image Docker à utiliser pour ce service.
     image: postgres:10  # Utilise l'image officielle de PostgreSQL version 10.
-    # Variables d'environnement pour configurer PostgreSQL.
     environment:
-      POSTGRES_PASSWORD: example  # Définit le mot de passe de l'utilisateur PostgreSQL.
-    # Montage des volumes pour persister les données de la base de données.
+      POSTGRES_USER: drupal_user  # Utilisateur PostgreSQL.
+      POSTGRES_PASSWORD: example  # Mot de passe PostgreSQL.
+      POSTGRES_DB: drupal_db  # Base de données pour Drupal.
     volumes:
-      - postgres_data:/var/lib/postgresql/data  # Le volume 'postgres_data' est monté pour stocker les données de PostgreSQL.
-    # Réseaux auxquels le service est connecté.
+      - postgres_data:/var/lib/postgresql/data  # Persiste les données de la base de données.
     networks:
-      - net  # Le service est connecté au réseau 'net'.
-    # Configuration spécifique au déploiement Swarm.
+      - net  # Connecte le service au réseau Swarm 'net'.
     deploy:
-      replicas: 1  # Nombre de réplicas (instances) du service à exécuter.
+      replicas: 1  # Exécute une seule instance de PostgreSQL.
       placement:
         constraints:
-          - node.role == manager  # PostgreSQL doit s'exécuter uniquement sur un nœud manager.
+          - node.role == manager  # PostgreSQL s'exécute uniquement sur un nœud manager.
       restart_policy:
-        condition: on-failure  # Redémarre le conteneur uniquement en cas d'échec.
+        condition: on-failure  # Redémarre uniquement en cas d'échec.
 
-# Définition des volumes utilisés par les services.
+# Définition des volumes persistants pour stocker les données.
 volumes:
   drupal:
-    driver: local  # Utilise un pilote local pour le volume 'drupal'.
+    driver: local  # Pilote de volume local pour Drupal.
   postgres_data:
-    driver: local  # Utilise un pilote local pour le volume 'postgres_data'.
+    driver: local  # Pilote de volume local pour PostgreSQL.
 
-# Définition des réseaux utilisés par les services.
+# Définition des réseaux pour connecter les services.
 networks:
   net:
-    driver: overlay  # Utilise un réseau overlay pour permettre la communication entre les services sur plusieurs nœuds dans un cluster Swarm.
+    driver: overlay  # Réseau overlay pour la communication entre les nœuds du cluster Swarm.
