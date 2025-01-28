@@ -29,7 +29,7 @@ services:
     image: postgres:10  # Utilise l'image officielle de PostgreSQL version 10.
     environment:
       POSTGRES_USER: drupal_user  # Utilisateur PostgreSQL.
-      POSTGRES_PASSWORD: example  # Mot de passe PostgreSQL.
+      POSTGRES_PASSWORD: drupal_password  # Mot de passe PostgreSQL.
       POSTGRES_DB: drupal_db  # Base de données pour Drupal.
     volumes:
       - postgres_data:/var/lib/postgresql/data  # Persiste les données de la base de données.
