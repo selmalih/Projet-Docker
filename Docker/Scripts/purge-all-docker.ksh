@@ -51,6 +51,6 @@ echo "🌐 Suppression de tous les réseaux..."
 docker network rm $(docker network ls -q) 2>/dev/null
 
 echo "🔄 Redémarrage du service Docker..."
-systemctl restart docker
+sudo systemctl restart docker
 
 echo "✅ Docker est maintenant réinitialisé à son état initial !"
