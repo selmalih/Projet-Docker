@@ -6,7 +6,7 @@
 # Auteur      : Souhail
 # Création    : 28 Janvier 2025
 # Mise à jour : 28 Janvier 2025
-# Version     : 1.0
+# Version     : 1.1
 # ------------------------------------------------------------------------------
 # Description :
 #   - Supprime tous les conteneurs Docker
@@ -14,6 +14,7 @@
 #   - Désactive Docker Swarm et supprime tous les services Swarm
 #   - Supprime tous les volumes et réseaux Docker
 #   - Redémarre le service Docker pour un état propre
+#   - Vérifie que tout est bien supprimé à la fin
 # ------------------------------------------------------------------------------
 # ⚠️ ATTENTION : Ce script supprime définitivement toutes les données Docker !
 # Usage :
@@ -54,3 +55,24 @@ echo "🔄 Redémarrage du service Docker..."
 sudo systemctl restart docker
 
 echo "✅ Docker est maintenant réinitialisé à son état initial !"
+
+# 🔍 Vérification après le nettoyage
+echo "🔎 Vérification des ressources Docker après le nettoyage..."
+
+echo "📦 Conteneurs restants :"
+docker ps -a
+
+echo "🖼️ Images restantes :"
+docker images
+
+echo "📦 Volumes restants :"
+docker volume ls
+
+echo "🌐 Réseaux restants :"
+docker network ls
+
+echo "🛑 Services Swarm restants :"
+docker service ls
+
+echo "🎯 Vérification terminée ! Si tout est vide, le nettoyage est réussi ✅"
+
